@@ -1,0 +1,23 @@
+syntax = "proto3";
+package telemetry;
+
+option go_package = "~/Users/peterwinzell/telemetry/api/proto;telemetrypb";
+
+service TelemetryService {
+  rpc ChargingStatus (stream ChargingStatusRequest) returns (ChargingStatusResponse);
+}
+
+message ChargingStatusRequest{
+  string bike_id      = 1;
+  float battery_level = 2;
+  bool is_charging    = 3;
+  string timestamp    = 4;
+  double lat = 5;
+  double long = 6;
+}
+
+message ChargingStatusResponse{
+  string status = 1;
+}
+
+
