@@ -20,11 +20,11 @@ func main() {
 	}
 
 	path := "/bike-pw/telemetry"
-	if len(os.Args) > 1 {
+	if len(os.Args) > 1 { // you can add customized path as command line parameter
 		path = os.Args[1]
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*55) // run for half a minute
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60) // run for a minute
 	defer cancel()
 
 	go func() {
