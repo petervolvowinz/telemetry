@@ -27,6 +27,7 @@ func NewCurrentDataPoint() *CurrentDataPoint {
 		getChan: make(chan getRequest),
 		setChan: make(chan setRequest),
 	}
+	// run a "local" thread which waits a listens for get and set messages
 	go func() {
 		var value DataPoint
 		for {

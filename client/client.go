@@ -212,8 +212,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	wg := sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
+	wg.Add(3)
+	/*go func() {
 		defer wg.Done()
 		runGRPCClient(current_data_point, ctx)
 	}()
@@ -221,10 +221,15 @@ func main() {
 	go func() {
 		defer wg.Done()
 		runMQTTPublisher(current_data_point, ctx)
+	}()*/
+
+	go func() {
+		defer wg.Done()
+		runCoapServer1(current_data_point, ctx)
 	}()
 
 	go func() {
-		time.Sleep(30 * time.Second) // run for half a minute then shut down...
+		time.Sleep(60 * time.Second) // run for half a minute then shut down...
 		cancel()                     // signal all goroutines to stop
 	}()
 
