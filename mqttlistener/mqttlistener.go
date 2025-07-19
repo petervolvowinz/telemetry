@@ -14,11 +14,14 @@ func main() {
 
 	// Define topic to listen to (e.g., a specific bike ID or wildcard)
 	topic := "bike-pw/#" // any bike id
+	if len(os.Args) > 1 {
+		topic = os.Args[1] // topic as program arg
+	}
 
 	// Create MQTT client options
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
-	opts.SetClientID(clientID)
+	opts.SetClientID(clientID) // sets the id of this client.
 
 	// Create and connect the client
 	client := mqtt.NewClient(opts)

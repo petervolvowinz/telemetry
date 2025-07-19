@@ -161,6 +161,7 @@ func runGRPCClient(cp *dp.CurrentDataPoint, ctx context.Context) {
 }
 
 func runMQTTPublisher(cp *dp.CurrentDataPoint, ctx context.Context) {
+
 	broker := "tcp://localhost:1883" // or your broker URL
 	opts := mqtt.NewClientOptions().AddBroker(broker)
 	opts.SetClientID("bike1234")
@@ -199,12 +200,12 @@ func runMQTTPublisher(cp *dp.CurrentDataPoint, ctx context.Context) {
 
 func main() {
 	//Test()
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run client.go bike device id")
-		return
+
+	bike_id := "1d5dfe76" // uui generated and sliced to 8 characters
+	if len(os.Args) > 1 {
+		bike_id = os.Args[1]
 	}
 
-	bike_id := os.Args[1]
 	datapoints := readDataPointsFromCSV(bike_id)
 
 	current_data_point := dp.NewCurrentDataPoint()
@@ -213,7 +214,7 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(3)
-	/*go func() {
+	go func() {
 		defer wg.Done()
 		runGRPCClient(current_data_point, ctx)
 	}()
@@ -221,7 +222,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		runMQTTPublisher(current_data_point, ctx)
-	}()*/
+	}()
 
 	go func() {
 		defer wg.Done()

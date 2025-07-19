@@ -4,9 +4,10 @@ set -e
 
 # List of main Go program files (one per package)
 PROGRAMS=(
-  "client/client.go"
   "server/server.go"
   "mqttlistener/mqttlistener.go"
+  "client/client.go"
+  "coapobserver/coapobserver.go"
 )
 
 # Colors for output (red, green, blue)

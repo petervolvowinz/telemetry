@@ -41,7 +41,8 @@ func runCoapServer1(cp *dp.CurrentDataPoint, ctx context.Context) {
 		default:
 			router.Handle("/bike-pw/telemetry", mux.HandlerFunc(hfunc))
 			log.Println("serving coap on 5688")
-			log.Fatal(coap.ListenAndServe("udp4", ":5688", router))
+			// listen to both Ipv4 and 6, resorts to a dual stack socket
+			log.Fatal(coap.ListenAndServe("udp", ":5688", router))
 		}
 	}
 
