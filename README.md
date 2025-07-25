@@ -34,6 +34,33 @@ Lightweight protocol that ... <TODO>
 Another lightweight RESTful IOT protocol that is mostly used in resource constrained microcontrollers...<TODO>
 
 **gRPC implementation**
+
+gRPC uses a interface defintion language approach where you from a protobuf file generates code for the specific language.
+
+We define our telemetry service::
+```protobuf
+
+service TelemetryService {
+  rpc ChargingStatus (stream ChargingStatusRequest) returns (ChargingStatusResponse);
+}
+
+message ChargingStatusRequest{
+  string bike_id      = 1;
+  float battery_level = 2;
+  bool is_charging    = 3;
+  string timestamp    = 4;
+  double lat = 5;
+  double long = 6;
+}
+
+message ChargingStatusResponse{
+  string status = 1;
+}
+```
+
+
 **MQTT implementation**
 **CoAp implementation**
+**Open street map web sever**
+
 
