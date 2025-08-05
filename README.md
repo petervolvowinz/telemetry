@@ -19,6 +19,8 @@ message ChargingStatusRequest{
 
 Here expressed in protobuf syntax. 
 
+To build and run the examples, we need to follow these initial steps.
+
 **gRPC**
 
 gRPC is a rpc protocol that lets you stream data bi-directional. It has great language support and is known for
@@ -37,11 +39,8 @@ $ brew services start mosquitto
 ```
 
 This lets us run local testing and the default port for the local broker is:
-
-
 ```
     broker := "tcp://localhost:1883" // public test broker
-	clientID := "bike123"
 ```
 
 In MQTT we publish data through a concept of topics: 
@@ -58,13 +57,47 @@ A client can choose to listen to a specific message or it can use wildcards:
     "bike-telemetry/#"        subscribe to any message published under bike-telemetry
 ```
 
+To setup a publisher we do this:
+```
+    // Basic setup
+    broker := "tcp://localhost:1883" // broker URL
+	opts := mqtt.NewClientOptions().AddBroker(broker)
+	opts.SetClientID("bike1234")
+	
+    ...
+    
+    // add options to the mqtt client
+	client := mqtt.NewClient(opts)
+	
+    ...
+    
+    // connect to broker
+    if token := client.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatal("Connection error:", token.Error())
+	}
+	log.Println("Connected to MQTT broker")
+	
+	...
+	
+	// publish  to topic = "bike-telemetry/<your-device-id>"
+	token := client.Publish("bike-telemetry/"+datap.BikeID, 0, true, payload)
+	token.Wait()
+	if err := token.Error(); err != nil {
+		log.Println("Publish error:", err)
+	} else {
+		log.Println("Published to topic: bike-pw-1/" + datap.BikeID)
+	}
+	...
+```
 
+For the subscriber the setup is similar:
 
-```Go
-broker := "tcp://localhost:1883" // public test broker
-	clientID := "bike123"
+```
+    // setup
+    broker := "tcp://localhost:1883"
+	clientID := "laker123"
 	// Define topic to listen to (e.g., a specific bike ID or wildcard)
-	topic := "bike-pw/#" // any bike id
+	topic := "bike-telemetry/#" // any bike id
 	if len(os.Args) > 1 {
 		topic = os.Args[1] // topic as program arg
 	}
@@ -80,13 +113,14 @@ broker := "tcp://localhost:1883" // public test broker
 		log.Fatal("Failed to connect:", token.Error())
 	}
 	log.Println("Connected to MQTT broker")
-
+    
+    // subscribe to "bike-telemetry/<any-device>"
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		log.Printf("Received message on [%s]: %s\n", msg.Topic(), msg.Payload())
 	}); token.Wait() && token.Error() != nil {
 		log.Fatal(token.Error())
 	}
-
+    ...
 
 ```
 
