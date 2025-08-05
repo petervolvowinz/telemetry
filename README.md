@@ -36,8 +36,59 @@ $ brew services start mosquitto
 
 ```
 
-This lets us run local testing . There are also url based test brokers to test against.
+This lets us run local testing and the default port for the local broker is:
 
+
+```
+    broker := "tcp://localhost:1883" // public test broker
+	clientID := "bike123"
+```
+
+In MQTT we publish data through a concept of topics: 
+Topics are defined as a tree structure with slash (/) as delimiters. Strings are UTF-8 encoded, they act as message 
+channels which are then available for client subscription. Topics are also case-sensitive, below a MQTT topic example:
+
+```
+  topic : "bike-telemetry/123456"
+```
+
+A client can choose to listen to a specific message or it can use wildcards:
+```
+    "bike-telemetry/123456"   subscribe to messages matching this string 
+    "bike-telemetry/#"        subscribe to any message published under bike-telemetry
+```
+
+
+
+```Go
+broker := "tcp://localhost:1883" // public test broker
+	clientID := "bike123"
+	// Define topic to listen to (e.g., a specific bike ID or wildcard)
+	topic := "bike-pw/#" // any bike id
+	if len(os.Args) > 1 {
+		topic = os.Args[1] // topic as program arg
+	}
+
+	// Create MQTT client options
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(broker)
+	opts.SetClientID(clientID) // sets the id of this client.
+
+	// Create and connect the client
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatal("Failed to connect:", token.Error())
+	}
+	log.Println("Connected to MQTT broker")
+
+	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
+		log.Printf("Received message on [%s]: %s\n", msg.Topic(), msg.Payload())
+	}); token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+	}
+
+
+```
 
 
 
