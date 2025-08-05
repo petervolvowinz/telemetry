@@ -21,13 +21,13 @@ Here expressed in protobuf syntax.
 
 To build and run the examples, we need to follow these initial steps.
 
-**gRPC**
+**gRPC setup**
 
 gRPC is a rpc protocol that lets you stream data bi-directional. It has great language support and is known for
 its performance. Major drawback is that it is resource demanding and that it depends on http2 which is sometimes blocked
 out from corporate walls - basically because don't support HTTP2.
 
-**MQTT**
+**MQTT setup**
 
 MQTT runs a broker service where clients can publish or subscribe to messages.
 To install a local running MQTT broker to run local development tests against we can use
@@ -42,7 +42,11 @@ This lets us run local testing and the default port for the local broker is:
 ```
     broker := "tcp://localhost:1883" // public test broker
 ```
+**CoAp setup**
 
+**Build and run**
+
+**MQTT implementation**
 In MQTT we publish data through a concept of topics: 
 Topics are defined as a tree structure with slash (/) as delimiters. Strings are UTF-8 encoded, they act as message 
 channels which are then available for client subscription. Topics are also case-sensitive, below a MQTT topic example:
