@@ -20,6 +20,7 @@
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         crossorigin=""
 ></script>
+<script src="https://unpkg.com/paho-mqtt/mqttws31.min.js"></script>
 <script>
     var map = L.map('map').setView([37.7749, -122.4194], 13); // San Fransisco default
 
@@ -27,6 +28,47 @@
         maxZoom: 19,
         attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+
+
+    const markers = {}
+    const clientID = "mqtt_bikeweb_client_" + Math.random().toString(16).substr(2, 8);
+    const client = new Paho.MQTT.Client("localhost", 1883, clientID);
+
+    client.onMessageArrived = function (msg) {
+        const data = JSON.parse(msg.payloadString);
+        const { BikeId, Timestamp,Latitude,Longitude,BatteryLevel,Charging } = data;
+
+        const popupContent = `
+            <b>Vehicle ID:</b> ${BikeId}<br/>
+            <b>Timestamp:</b> ${new Date(Timestamp * 1000).toLocaleString()}<br/>
+            <b>Battery:</b> ${BatteryLevel}%<br/>
+            <b>Charging:</b> ${Charging ? "Yes ⚡" : "No"}
+        `;
+
+        if (markers[vehicle_id]) {
+            markers[vehicle_id].setLatLng([Latitude, Longitude]).setPopupContent(popupContent);
+        } else {
+            const marker = L.marker([Latitude, Longitude]).addTo(map).bindPopup(popupContent);
+            markers[vehicle_id] = marker;
+        }
+    };
+
+    client.onConnectionLost = function (responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.log("Connection lost:", responseObject.errorMessage);
+        }
+    };
+
+    client.connect({
+        onSuccess: function () {
+            console.log("Connected to MQTT broker");
+            client.subscribe("bike-pw/#");
+        },
+        useSSL: false
+    });
+
+
 </script>
 </body>
 </html>
