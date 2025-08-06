@@ -19,13 +19,34 @@ type DataPoint struct {
 	Charging     bool
 }
 
+var a_san_fransisco_route = []struct {
+	Lat float64
+	Lng float64
+}{
+	{37.7955, -122.3937}, // Ferry Building
+	{37.8000, -122.3980}, // Embarcadero
+	{37.8076, -122.4200}, // Fort Mason
+	{37.8090, -122.4270}, // Marina Blvd
+	{37.8105, -122.4360}, // Crissy Field
+	{37.8077, -122.4477}, // Golden Gate Bridge View
+	{37.7989, -122.4591}, // Park Presidio Blvd
+	{37.7715, -122.4687}, // 14th Ave & Fulton
+	{37.7694, -122.4862}, // Golden Gate Park (west side)
+	{37.7691, -122.5107}, // Great Highway
+	{37.7603, -122.5108}, // Ocean Beach
+}
+
 func simulateBikeData(bikeID string, startLat, startLng float64, startTime time.Time, numPoints int) []DataPoint {
 	data := make([]DataPoint, 0, numPoints)
 	batteryLevel := 100.0
 
+	route_start := rand.Intn(len(a_san_fransisco_route))
 	for i := 0; i < numPoints; i++ {
-		lat := startLat + rand.Float64()*0.002 - 0.001
-		lng := startLng + rand.Float64()*0.002 - 0.001
+
+		lat := a_san_fransisco_route[route_start].Lat
+		lng := a_san_fransisco_route[route_start].Lng
+
+		route_start = (route_start + 1) % len(a_san_fransisco_route)
 
 		var charging bool
 		if i%15 == 0 && i != 0 {

@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"sync"
 	dp "telemetry/datapoint"
+	"telemetry/genid"
 	pb "telemetry/proto"
 	"time"
 )
@@ -164,7 +165,9 @@ func runMQTTPublisher(cp *dp.CurrentDataPoint, ctx context.Context) {
 
 	broker := "tcp://localhost:1883" // or your broker URL
 	opts := mqtt.NewClientOptions().AddBroker(broker)
-	opts.SetClientID("bike1234")
+	bid := &genid.Bikeid{}
+	clientId := "bike-" + bid.GenBikeId(genid.ShortIdGenerator)
+	opts.SetClientID(clientId)
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
@@ -201,7 +204,7 @@ func runMQTTPublisher(cp *dp.CurrentDataPoint, ctx context.Context) {
 func main() {
 	//Test()
 
-	bike_id := "1d5dfe76" // uui generated and sliced to 8 characters
+	bike_id := "0a96b1f5" // uui generated and sliced to 8 characters
 	if len(os.Args) > 1 {
 		bike_id = os.Args[1]
 	}
@@ -216,7 +219,7 @@ func main() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		runGRPCClient(current_data_point, ctx)
+		// runGRPCClient(current_data_point, ctx)
 	}()
 
 	go func() {

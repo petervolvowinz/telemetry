@@ -20,7 +20,8 @@
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         crossorigin=""
 ></script>
-<script src="https://unpkg.com/paho-mqtt/mqttws31.min.js"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
 <script>
     var map = L.map('map').setView([37.7749, -122.4194], 13); // San Fransisco default
 
@@ -31,43 +32,55 @@
 
 
 
-    const markers = {}
-    const clientID = "mqtt_bikeweb_client_" + Math.random().toString(16).substr(2, 8);
-    const client = new Paho.MQTT.Client("localhost", 1883, clientID);
+    const bikeMarkers = {}
+    const circleMarkers = {}
 
-    client.onMessageArrived = function (msg) {
-        const data = JSON.parse(msg.payloadString);
-        const { BikeId, Timestamp,Latitude,Longitude,BatteryLevel,Charging } = data;
+    const client = mqtt.connect('ws://localhost:8083');
 
-        const popupContent = `
-            <b>Vehicle ID:</b> ${BikeId}<br/>
-            <b>Timestamp:</b> ${new Date(Timestamp * 1000).toLocaleString()}<br/>
-            <b>Battery:</b> ${BatteryLevel}%<br/>
-            <b>Charging:</b> ${Charging ? "Yes ⚡" : "No"}
-        `;
+    client.on('connect', () => {
+        console.log('MQTT connected');
+        client.subscribe('bike-pw/#');
+    });
+    client.on('message', (topic, message) => {
+        try {
+            const data = JSON.parse(message.toString());
+            const {Battery_level,Bike_id, Charging,Latitude, Longitude, Timestamp} = data;
+            if (!Bike_id || !Latitude || !Longitude) return;
+            if (bikeMarkers[Bike_id]) {
+                /*bikeMarkers[Bike_id]
+                    .setLatLng([Latitude, Longitude])
+                    .setPopupContent(
+                        `Bike ID: ${Bike_id}<br>Battery: ${Battery_level}%`
+                    );*/
+                circleMarkers[Bike_id]
+                    .setLatLng([Latitude, Longitude])
+                    .setPopupContent(
+                        `Bike ID: ${Bike_id}<br>Battery: ${Battery_level}%`
+                    );
+            } else {
 
-        if (markers[vehicle_id]) {
-            markers[vehicle_id].setLatLng([Latitude, Longitude]).setPopupContent(popupContent);
-        } else {
-            const marker = L.marker([Latitude, Longitude]).addTo(map).bindPopup(popupContent);
-            markers[vehicle_id] = marker;
+                const circle = L.circle([Latitude, Longitude],5,{
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5
+                }).addTo(map).bindPopup(`Bike ID: ${Bike_id}<br>Battery: ${Battery_level}%`);
+                circleMarkers[Bike_id] = circle;
+
+                /*const marker = L.marker([Latitude, Longitude])
+                    .addTo(map)
+                    .bindPopup(
+                        `Bike ID: ${Bike_id}<br>Battery: ${Battery_level}%`
+                    );*/
+                bikeMarkers[Bike_id] = marker;
+            }
+        } catch (error) {
+            console.error('Invalid message', error)
         }
-    };
-
-    client.onConnectionLost = function (responseObject) {
-        if (responseObject.errorCode !== 0) {
-            console.log("Connection lost:", responseObject.errorMessage);
-        }
-    };
-
-    client.connect({
-        onSuccess: function () {
-            console.log("Connected to MQTT broker");
-            client.subscribe("bike-pw/#");
-        },
-        useSSL: false
     });
 
+    client.on('error', (err) => {
+        console.error('MQTT error:', err);
+    });
 
 </script>
 </body>
